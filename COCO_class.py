@@ -6,6 +6,7 @@ import io
 import requests
 from PIL import Image
 import matplotlib.pyplot as plt
+from collection import Counter
 
 from text_embedding import create_text_embedding
 from descriptors import generate_descriptor as gd
@@ -24,7 +25,7 @@ def cosine_similarity(d1, d2):
 	------
 	float
 	"""
-	return 1 - ((np.dot(d1, d2)) / (norm(d1) * norm(d2)))
+	return np.dot(d1, d2) # / (norm(d1) * norm(d2)) - For non-unit vectors
 	
 def download_image(img_url: str) -> Image:
     """ Fetches an image from the web.
@@ -46,8 +47,8 @@ class COCO:
 	# This is a class variable that can be accessed and changed through COCO.database (WARNING: directly changing class variables in general is never a good idea as it is )
 	database = {}
 	
-	@classmethod()
-	def import_database(file_path=Path("./captions_train2014.json")):
+	@classmethod
+	def import_database(cls, file_path=Path("./captions_train2014.json")):
 		"""
 		Imports JSON file and stores its contents in the database class variable
 		
@@ -66,8 +67,8 @@ class COCO:
 		else:
 			print("Import Error: Invalid file path")
 	
-	@classmethod()
-	def get_all_caption_ids():
+	@classmethod
+	def get_all_caption_ids(cls):
 		"""Resurns a list of caption IDs
 		
 		Returns
@@ -84,8 +85,8 @@ class COCO:
 		
 		return captions_ids
 
-	@classmethod()
-	def get_all_captions():
+	@classmethod
+	def get_all_captions(cls):
 		"""
 		Gets all captions from the database
 		
@@ -103,8 +104,8 @@ class COCO:
 		
 		return captions
 		
-	@classmethod()
-	def get_all_image_ids():
+	@classmethod
+	def get_all_image_ids(cls):
 		"""Gets all image IDs as a list
 
 		Returns
@@ -119,8 +120,8 @@ class COCO:
 
 		return ids
 
-	@classmethod()
-	def get_image_id(caption_id):
+	@classmethod
+	def get_image_id(cls, caption_id):
 		"""Get the associated image ID from a caption ID
 		
 		Parameters
@@ -139,8 +140,8 @@ class COCO:
 		print("No caption with given ID was found. This function has returned a None-type object")
 		return None
 
-	@classmethod()
-	def get_caption_ids(image_id):
+	@classmethod
+	def get_caption_ids(cls, image_id):
 		""" Gets associated caption IDs for an image ID
 
 		Parameters
@@ -155,8 +156,8 @@ class COCO:
 		"""
 		return [caption["id"] for caption in COCO.database["annotations"] if caption["image_id"] == image_id]
 
-	@classmethod()
-	def get_captions(image_id):
+	@classmethod
+	def get_captions(cls, image_id):
 		"""Gets the captions associated with the image ID
 		
 		Parameters
@@ -171,8 +172,8 @@ class COCO:
 		"""
 		return [caption["caption"] for caption in COCO.database["annotations"] if caption["image_id"] == image_id]
 
-	@classmethod()
-	def get_caption_embedding(caption_id):
+	@classmethod
+	def get_caption_embedding(cls, caption_id):
 		"""Gets the embedding for ID
 		
 		Parameters
@@ -186,11 +187,11 @@ class COCO:
 			The weighted sum embedding fo the specified caption
 		"""
 		for caption_dict in COCO.database["annotations"]:
-			if caption_dict["id"] == caption_id
+			if caption_dict["id"] == caption_id:
 				return create_text_embedding(caption_dict["caption"])
 
-	@classmethod()
-	def find_similar_images(query, k):
+	@classmethod
+	def find_similar_images(cls, query, k):
 		"""Create function that finds top k similar images to a query image
 		
 		Parameters
@@ -206,21 +207,20 @@ class COCO:
 		image_ids : List[int]
 			A list of the image ids that are similar to the query image
 		"""
-		ids = {}
+		scores_to_ids = {}
 		
 		for image in COCO.database["images"]:
-			if image[""] in resnet.keys():
-        		return resnet[imgID]
-    		else:
-        		return None
+			img_descriptor = gd(image["id"])
 			
-			distance = cosine_similarity(query, )
-
+			if img_descriptor is not None:
+				scores_to_ids[image["id"]] = cosine_similarity(query, img_descriptor)
+				
+		scores_to_ids = {k: v for k, v in sorted(scores_to_ids.items(), key=lambda item: item[1])}
 		
-		
-	# ! Please review this one as a High priority
-	@classmethod()
-	def display_images(image_ids):
+		return np.ndarray(scores_to_ids.keys())[:k]
+        		
+	@classmethod
+	def display_images(cls, image_ids):
 		"""Displays images using given image IDs
 		
 		Parameters
