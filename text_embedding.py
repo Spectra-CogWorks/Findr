@@ -1,3 +1,4 @@
+import numpy as np
 import gensim
 from gensim.models.keyedvectors import KeyedVectors
 import re, string
