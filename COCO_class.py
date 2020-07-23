@@ -5,10 +5,12 @@ from numpy.linalg import norm
 import io
 import requests
 from PIL import Image
+import matplotlib.pyplot as plt
 
 from text_embedding import create_text_embedding
+from descriptors import generate_descriptor as gd
 
-def cosine_similarity(d1, d2)
+def cosine_similarity(d1, d2):
 	"""Finds the cosine similarity between two image vectors
 	
 	Parameters
@@ -22,7 +24,23 @@ def cosine_similarity(d1, d2)
 	------
 	float
 	"""
-	return 1 - ((np.dot(d1, d2)) / (norm(d1) * norm(d2))
+	return 1 - ((np.dot(d1, d2)) / (norm(d1) * norm(d2)))
+	
+def download_image(img_url: str) -> Image:
+    """ Fetches an image from the web.
+
+    Parameters
+    ----------
+    img_url : string
+        The url of the image to fetch.
+
+    Returns
+    -------
+    PIL.Image
+        The image."""
+
+    response = requests.get(img_url)
+    return Image.open(io.BytesIO(response.content))
 
 def class COCO - Pranav, Ian
 	# This is a class variable that can be accessed and changed through COCO.database (WARNING: directly changing class variables in general is never a good idea as it is )
@@ -178,17 +196,24 @@ def class COCO - Pranav, Ian
 		Parameters
 		----------
 		query : int
-			The image_id
+			The descriptor vector of the query image
+			
 		k : int
+			The number of images to return
 		
 		Return
 		------
 		image_ids : List[int]
 			A list of the image ids that are similar to the query image
 		"""
-		image_
+		ids = {}
 		
-	
+		for image in COCO.database["images"]:
+			distance = cosine_similarity(query, )
+
+		
+		
+	# ! Please review this one as a High priority
 	@classmethod()
 	def display_images(image_ids):
 		"""Displays images using given image IDs
@@ -196,9 +221,18 @@ def class COCO - Pranav, Ian
 		Parameters
 		----------
 		image_ids :  List[int]
-		
+			Image IDs to display
 		
 		Returns
 		-------
 		None
 		"""
+		
+		for image in COCO.database["images"]:
+			if image["id"] in image_ids:
+				img = download_image(image["coco_url"])
+				img_arr = np.array(img)
+
+				fig, ax = plt.subplots()
+				ax.imshow(img_arr)
+				plt.show(block=True)
