@@ -42,12 +42,12 @@ def download_image(img_url: str) -> Image:
     response = requests.get(img_url)
     return Image.open(io.BytesIO(response.content))
 
-def class COCO - Pranav, Ian
+class COCO:
 	# This is a class variable that can be accessed and changed through COCO.database (WARNING: directly changing class variables in general is never a good idea as it is )
 	database = {}
 	
 	@classmethod()
-	def import_database(file_path=Path("./captions_train2014.json"))
+	def import_database(file_path=Path("./captions_train2014.json")):
 		"""
 		Imports JSON file and stores its contents in the database class variable
 		
@@ -67,7 +67,7 @@ def class COCO - Pranav, Ian
 			print("Import Error: Invalid file path")
 	
 	@classmethod()
-	def get_all_caption_ids()
+	def get_all_caption_ids():
 		"""Resurns a list of caption IDs
 		
 		Returns
@@ -85,7 +85,7 @@ def class COCO - Pranav, Ian
 		return captions_ids
 
 	@classmethod()
-	def get_all_captions()
+	def get_all_captions():
 		"""
 		Gets all captions from the database
 		
@@ -209,6 +209,11 @@ def class COCO - Pranav, Ian
 		ids = {}
 		
 		for image in COCO.database["images"]:
+			if image[""] in resnet.keys():
+        		return resnet[imgID]
+    		else:
+        		return None
+			
 			distance = cosine_similarity(query, )
 
 		
