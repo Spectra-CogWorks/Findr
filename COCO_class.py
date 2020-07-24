@@ -160,9 +160,9 @@ class COCO:
 		"""
 		if caption_id in self.caption_id_to_img_id:
 			return self.caption_id_to_img_id[caption_id]
-		else:
+		#else:
 			# print("No caption with given ID was found. This function has returned a None-type object")
-			return None
+			#return None
 	
 	def get_caption_ids(self, image_id):
 		""" Gets associated caption IDs for an image ID

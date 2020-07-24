@@ -72,18 +72,18 @@ def extract_triples(caption_ids):
             # generate the 25 captions that we choose the FINAL bad caption from
             bad_batch_cap = []
             bad_batch_img = []
-            print("Awaiting intense success...")
+            #print("Awaiting intense success...")
             while len(bad_batch_cap) < 25:
                 bad_cap = random.choice(caption_ids)
                 bad_img = coco.get_image_id(bad_cap)
                 if  bad_img in bad_batch_img or bad_img == coco.get_image_id(good_cap):
-                    print("Inside the if...")
+                    #print("Inside the if...")
                     continue
                 else:
-                    print("Inside the else...")
+                    #print("Inside the else...")
                     bad_batch_cap.append(bad_cap)
                     bad_batch_img.append(bad_img)
-            print("Now..this is intens  e success")
+            #print("Now..this is intens  e success")
             #determine which caption in bad_batch_cap is the FINAL bad caption
 
             cos_sims = {}
