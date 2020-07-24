@@ -1,6 +1,7 @@
 from mynn.layers.dense import dense
 from mygrad.nnet.initializers import he_normal
-class img2caption:
+
+class Img2Caption:
     def __init__(self, dim_input=512, dim_encoded=50):
         """This initializes the single layer in our model, and sets it
         as an attribute of the model.
@@ -40,4 +41,4 @@ class img2caption:
         -------
         Tuple[Tensor, ...]
             A tuple containing all of the learnable parameters for our model """
-        return self.dense1.parameters
+        return tuple(self.dense1.parameters)

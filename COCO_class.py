@@ -6,7 +6,7 @@ import io
 import requests
 from PIL import Image
 import matplotlib.pyplot as plt
-from collection import Counter
+from collections import Counter
 
 from text_embedding import create_text_embedding
 from descriptors import generate_descriptor as gd
@@ -196,7 +196,7 @@ class COCO:
 		
 		Parameters
 		----------
-		query : int
+		query : np.ndarray - shape(512,)
 			The descriptor vector of the query image
 			
 		k : int
