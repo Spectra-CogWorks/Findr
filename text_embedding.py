@@ -3,7 +3,7 @@ import gensim
 from gensim.models.keyedvectors import KeyedVectors
 import re, string
 
-path = r"glove.6B.50d.txt.w2v"
+path = r"./glove.6B.50d.txt.w2v"
 glove = KeyedVectors.load_word2vec_format(path, binary=False)
 
 punc_regex = re.compile('[{}]'.format(re.escape(string.punctuation)))
