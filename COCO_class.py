@@ -13,9 +13,6 @@ import re, string
 from descriptors import generate_descriptor
 from img2caption_class import Img2Caption
 
-path = r"./glove.6B.50d.txt.w2v"
-glove = KeyedVectors.load_word2vec_format(path, binary=False)
-
 punc_regex = re.compile('[{}]'.format(re.escape(string.punctuation)))
 
 def cosine_similarity(d1, d2):
@@ -215,7 +212,7 @@ class COCO:
 		return punc_regex.sub('', text)
 
 	@classmethod
-	def create_text_embedding(cls, text):
+	def create_text_embedding(cls, text, path=r"./glove.6B.50d.txt.w2v"):
 		"""
 		Creates text embeddings of captions and query text.
 
@@ -229,6 +226,8 @@ class COCO:
 		embeddings : np.ndarray
 			A shape-(1, 50) numpy array of embeddings for the input text, weighed according to each word's IDF.
 		"""
+		glove = KeyedVectors.load_word2vec_format(path, binary=False)
+		
 		text = text.lower()
 		text = cls.strip_punc(text)
 		text_array = text.split()
