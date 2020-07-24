@@ -92,7 +92,7 @@ class COCO:
 		"""
 		self.image_ids = []
 
-		for image in COCO.database["images"]:
+		for image in self.database["images"]:
 			self.image_ids.append(image["id"])
 
 	def init_annotation_mappings(self):
@@ -114,12 +114,12 @@ class COCO:
 			self.caption_id_to_img_id[caption_dict["id"]] = caption_dict["image_id"]
 				
 			if caption_dict["image_id"] in self.img_ids_to_caption_ids:
-				self.img_ids_to_caption_ids[caption_dict["image_id"]].append([caption["id"]])
+				self.img_ids_to_caption_ids[caption_dict["image_id"]].append(caption["id"])
 			else:
 				self.img_ids_to_caption_ids[caption_dict["image_id"]] = [caption["id"]]
 				
 			if caption_dict["image_id"] in self.img_ids_to_captions:
-				self.img_ids_to_captions[caption_dict["image_id"]].append([caption["caption"]])
+				self.img_ids_to_captions[caption_dict["image_id"]].append(caption["caption"])
 			else:
 				self.img_ids_to_captions[caption_dict["image_id"]] = [caption["caption"]]
 			
@@ -296,103 +296,25 @@ class COCO:
 		return [k for k, v in sorted(ids_to_scores.items(), key=lambda item: item[1])][-k:]
         		
 	def display_images(self, image_ids):
-		"""Displays images using given image IDs
-		
-		Parameters
-		----------
-		image_ids :  List[int]
-			Image IDs to display
-		
-		Returns
-		-------
-		None
-		"""
-		
-		for image in self.database["images"]:
-			if image["id"] in image_ids:
-				img = download_image(image["coco_url"])
-				img_arr = np.array(img)
+			"""Displays images using given image IDs
+			
+			Parameters
+			----------
+			image_ids :  List[int]
+				Image IDs to display
+			
+			Returns
+			-------
+			None
+			"""
+			
+			for image in self.database["images"]:
+				if image["id"] in image_ids:
+					img = download_image(image["coco_url"])
+					img_arr = np.array(img)
 
-				fig, ax = plt.subplots() # pylint: disable=unused-variable
-				ax.imshow(img_arr)
-				plt.show(block=True)
-
-coco = COCO()		-------
-		None
-		"""
-		
-		for image in self.database["images"]:
-			if image["id"] in image_ids:
-				img = download_image(image["coco_url"])
-				img_arr = np.array(img)
-
-				fig, ax = plt.subplots() # pylint: disable=unused-variable
-				ax.imshow(img_arr)
-				plt.show(block=True)
-
-coco = COCO()		-------
-		None
-		"""
-		
-		for image in self.database["images"]:
-			if image["id"] in image_ids:
-				img = download_image(image["coco_url"])
-				img_arr = np.array(img)
-
-				fig, ax = plt.subplots() # pylint: disable=unused-variable
-				ax.imshow(img_arr)
-				plt.show(block=True)
-
-coco = COCO()		-------
-		None
-		"""
-		
-		for image in self.database["images"]:
-			if image["id"] in image_ids:
-				img = download_image(image["coco_url"])
-				img_arr = np.array(img)
-
-				fig, ax = plt.subplots() # pylint: disable=unused-variable
-				ax.imshow(img_arr)
-				plt.show(block=True)
-
-coco = COCO()		-------
-		None
-		"""
-		
-		for image in self.database["images"]:
-			if image["id"] in image_ids:
-				img = download_image(image["coco_url"])
-				img_arr = np.array(img)
-
-				fig, ax = plt.subplots() # pylint: disable=unused-variable
-				ax.imshow(img_arr)
-				plt.show(block=True)
-
-coco = COCO()		-------
-		None
-		"""
-		
-		for image in self.database["images"]:
-			if image["id"] in image_ids:
-				img = download_image(image["coco_url"])
-				img_arr = np.array(img)
-
-				fig, ax = plt.subplots() # pylint: disable=unused-variable
-				ax.imshow(img_arr)
-				plt.show(block=True)
-
-coco = COCO()		-------
-		None
-		"""
-		
-		for image in self.database["images"]:
-			if image["id"] in image_ids:
-				img = download_image(image["coco_url"])
-				img_arr = np.array(img)
-
-				fig, ax = plt.subplots() # pylint: disable=unused-variable
-				ax.imshow(img_arr)
-				plt.show(block=True)
+					fig, ax = plt.subplots() # pylint: disable=unused-variable
+					ax.imshow(img_arr)
+					plt.show(block=True)
 
 coco = COCO()
