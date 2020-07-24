@@ -2,13 +2,12 @@
 import json
 import pickle as pkl
 import numpy as np
-from COCO_class import cosine_similarity
+from COCO_class import cosine_similarity, COCO
 from descriptors import generate_descriptor
+from img2caption_class import Img2Caption
 
-with open("captions_train2014.json", mode="rb") as opened_file:
-    captions = json.load(opened_file)
 with open("resnet18_features.pkl", mode="rb") as opened_file:
-    resnet = pkl.load(opened_file)
+    resnet = pickle.load(opened_file)
 
 def create_train_and_test():
     """
@@ -52,78 +51,79 @@ def create_train_and_test():
 
     return (train_data, val_data)
     
-def extract_triples(model, captions):
+def extract_triples(caption_ids):
     """
     Parameters
     ----------
-    model
-        Instance of the Img2Cap class.
-
-    captions : np.ndarray
-        The set of captions that we need to extract triples from.
+    captions : np.ndarray shape=(30000,)
+        The set of caption IDs that we need to extract triples from.
     
     Returns
     -------
-    triple_array : np.ndarray
-        A numpy array where each row is the tuple (d_good_img, w_good_cap, d_bad_img).
+    final_truples: np.ndarray
+        A numpy array where each row is the list of tuples
+        row  = [ (d_good_img, w_good_cap, d_bad_img), (...), ... ].
     """
+    # Instantiating the model with the trained weights
+    model = Img2Caption()
+    model.load_model()
+    
     # for each caption_id get 25 !!!!other!!!!! random caption_ids that belong to different images
 
-    # Possible code
-    all_cap_ids = COCO.get_all_caption_ids()
-    all_bad_caps = []
-    for cap_ID in all_cap_ids:
-        if cap_ID not in captions:
-            all_bad_caps.append(cap_ID)
+    """
+    """
+
+    # Get all caption IDs
+    #all_cap_ids = COCO.get_all_caption_ids() 
+
     
-    bad_cap_ids = []
-    for good_cap in captions:
-        bad_cnt = 0
-        while bad_cnt < 10:
-            bad_batch = np.random.choice(all_bad_caps, 25)
+    #Get all bad captions: every caption not in ResNet
+    #all_bad_caps = [] #filled with caption IDs
+    #for cap_ID in all_cap_ids:
+    #    if cap_ID not in captions:
+    #       all_bad_caps.append(cap_ID)
+    
+    """
+    Check if we need this ^
+    """
+
+    #get bad captions for each good_cap
+    final_truples = [] # [ [(d_good_img, w_good_cap, d_bad_img), (d_good_img, w_good_cap, d_bad_img), (d_good_img, w_good_cap, d_bad_img)...] 
+                      #   [(d_good_img, w_good_cap, d_bad_img), (d_good_img, w_good_cap, d_bad_img), (d_good_img, w_good_cap, d_bad_img)...]  
+                      #                                 ...                                                                                   ]
+                      
+
+    for good_cap in caption_ids:
+
+        truple_list = []
+        for i in range(10):
+            # generate the 25 captions that we choose the FINAL bad caption from
+            bad_batch_cap = []
+            bad_batch_img = []
+            while len(bad_batch_cap) < 25:
+                bad_cap = random.choice(caption_ids)
+                bad_img = COCO.get_image_id(bad_cap)
+                if  bad_img in bad_batch_img or bad_img == COCO.get_image_id(good_cap):
+                    continue
+                else:
+                    bad_batch_cap.append(bad_cap)
+                    bad_batch_img.append(bad_img)
+                    
+            #determine which caption in bad_batch_cap is the FINAL bad caption
+
             cos_sims = {}
-            for bad_cap in bad_batch:
+            for bad_cap in bad_batch_cap:
                 cos_sim = cosine_similarity(COCO.get_caption_embedding(good_cap), COCO.get_caption_embedding(bad_cap))
                 cos_sims[cos_sim] = bad_cap
-            bad_cap_ids.append(cos_sims[max(cos_sims.keys())])
-            bad_cnt += 1
-    
-    bad_img_descriptors = []
-    for cap_ID in bad_cap_ids:
-        bad_img_d = generate_descriptor(COCO.get_image_id(cap_ID))
-        bad_img_descriptors.append(bad_img_d)
-    
-    good_img_descriptors = []
-    for cap_ID in captions:
-        good_img_d = generate_descriptor(COCO.get_image_id(cap_ID))
-        good_img_descriptors.append(good_img_d)
-    
-    good_captions = []
-    for cap_ID in captions:
-        good_captions.append(COCO.get_caption_embedding(cap_ID))
-    
-    triple_array = []
-    count = 0
-    for i in range(len(good_img_descriptors)):
-        bad_d = bad_img_descriptors[count * 10 : (count + 1) * 10]
-        for j in range(len(bad_d)):
-            triple_array.append((good_img_descriptors[i], good_captions[i], bad_d[j]))
-    
-    # or Tensor?
-    return np.array(triple_array)
+            final_bad_cap = cos_sims[max(cos_sims.keys())]
 
+            truple = (generate_descriptor(COCO.get_image_id(good_cap)),
+                    COCO.get_caption_embedding(good_cap),
+                    generate_descriptor(COCO.get_image_id(final_bad_cap))
+            truple_list.append(truple)
 
+        final_truples.append(truple_list)
+    
+    return np.array(final_truples)
 
-    # original code
-    for cap_ID in captions:
-        while(10 < 2):
-            np.random.choice(captions, 25) 
-
-    # calculate similarities between og caption_id and random caption_ids (need to check that these random caps
-        # aren't associated with the goodImg)
-    # choose highest cosine_similarity  and get img_id for badImg
-    # goodImg = image_id associated with original caption_id
-    # get descriptors for badImg and goodImg
-    # get caption embed for orginalCaption
-    resnet.keys() 
 
