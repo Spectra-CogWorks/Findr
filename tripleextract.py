@@ -5,6 +5,7 @@ import numpy as np
 from COCO_class import cosine_similarity, coco
 from descriptors import generate_descriptor
 from img2caption_class import Img2Caption
+import random
 
 with open("resnet18_features.pkl", mode="rb") as opened_file:
     resnet = pickle.load(opened_file)

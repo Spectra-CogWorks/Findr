@@ -114,16 +114,16 @@ class COCO:
 			self.caption_id_to_img_id[caption_dict["id"]] = caption_dict["image_id"]
 				
 			if caption_dict["image_id"] in self.img_ids_to_caption_ids:
-				self.img_ids_to_caption_ids[caption_dict["image_id"]].append(caption["id"])
+				self.img_ids_to_caption_ids[caption_dict["image_id"]].append(caption_dict["id"])
 			else:
-				self.img_ids_to_caption_ids[caption_dict["image_id"]] = [caption["id"]]
+				self.img_ids_to_caption_ids[caption_dict["image_id"]] = [caption_dict["id"]]
 				
 			if caption_dict["image_id"] in self.img_ids_to_captions:
-				self.img_ids_to_captions[caption_dict["image_id"]].append(caption["caption"])
+				self.img_ids_to_captions[caption_dict["image_id"]].append(caption_dict["caption"])
 			else:
-				self.img_ids_to_captions[caption_dict["image_id"]] = [caption["caption"]]
+				self.img_ids_to_captions[caption_dict["image_id"]] = [caption_dict["caption"]]
 			
-			self.img_ids_to_captions[caption_dict["image_id"]] = caption["caption"]
+			self.img_ids_to_captions[caption_dict["image_id"]] = caption_dict["caption"]
 			
 			self.caption_id_to_caption[caption_dict["id"]] = caption_dict["caption"]
 	
