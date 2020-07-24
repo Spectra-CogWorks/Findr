@@ -44,36 +44,12 @@ class Img2Caption:
             A tuple containing all of the learnable parameters for our model """
         return tuple(self.dense1.parameters)
     
-    def export_weights(self, filepath="weights.npy"):
-        """Export the model weights as a npy file
-        
-        Parameters
-        ----------
-        filepath : str
-            The filepath to save the npy file to
-        
-        Returns
-        -------
-        None
-        """
-        # TODO Double check to make sure that the numpy array will be storing the weight and bias properly
-        np.save(filepath, np.array(self.parameters))
-        
-    def import_weights(self, filepath="weights.npy"):
-        """Import the model weights from a npy file
-        
-        Parameters
-        ----------
-        filepath : str
-            The filepath to import the npy file from
-        
-        Returns
-        -------
-        None
-        """
-        
-        weights = tuple(np.load(filepath))
-        
-        # TODO Double check that the weight and bias are assigned properly
-        self.dense1.weight = weights[0]
-        self.dense1.bias = weights[1]
+    def save_model(self, path):
+        """Path to .npz file where model parameters will be saved."""
+        with open(path, "wb") as f:
+            np.savez(f, *(x.data for x in self.parameters))
+
+    def load_model(self, path):
+        with open(path, "rb") as f:
+            for param, (name, array) in zip(self.parameters, np.load(f).items()): # pylint: disable=unused-variable
+                param.data[:] = array

@@ -40,7 +40,7 @@ def search(query_text, k, filepath, weights_filepath):
     # TODO Doublecheck the model weight and bias import and export functions
     # Model is instantiated with proper weights
     model = Img2Caption()
-    model.import_weights(Path(weights_filepath))
+    model.load_model(Path(weights_filepath))
     
     # TODO Check that generate_descriptor() is correct
     # This gets the embeddings of all the images
