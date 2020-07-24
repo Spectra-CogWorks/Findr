@@ -3,7 +3,7 @@ from pathlib import Path
 
 import descriptors as de
 from img2caption_class import Img2Caption
-from COCO_class import COCO
+from COCO_class import coco
 
 # We might have to look into coding chained commands to prevent database from having issues
 @click.group()
@@ -31,10 +31,10 @@ def cli():
 def search(query_text, num_images, filepath, weights_filepath):
     """ This function goes through the full search process using all the other files in the package"""
     # Initialize database
-    COCO.import_database(Path(filepath))
+    coco.import_database(Path(filepath))
     
     # Create the query embedding
-    query_embed = COCO.create_text_embedding(query_text)
+    query_embed = coco.create_text_embedding(query_text)
     
     # Model is instantiated with proper weights
     model = Img2Caption()
@@ -42,9 +42,9 @@ def search(query_text, num_images, filepath, weights_filepath):
     
     # TODO Check find_similar_images for accuracy and optimal performance
     # This gets the embeddings of all the images
-    img_ids = COCO.find_similar_images(model, query_embed, num_images)
+    img_ids = coco.find_similar_images(model, query_embed, num_images)
     
-    COCO.display_images(img_ids)
+    coco.display_images(img_ids)
 
 # This if statement is necessary in order to call the group, which then enables all of the subcommands to be called
 if __name__ == "__main__":
