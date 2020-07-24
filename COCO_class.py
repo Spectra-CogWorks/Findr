@@ -10,7 +10,7 @@ import gensim
 from gensim.models.keyedvectors import KeyedVectors
 import re, string
 
-from descriptors import generate_descriptor as gd
+from descriptors import generate_descriptor
 from img2caption_class import Img2Caption
 
 path = r"./glove.6B.50d.txt.w2v"
@@ -86,7 +86,6 @@ class COCO:
 		caption_ids = []
 		
 		# Iterating through all the captions in the database
-		# ! Check for the right key in the database
 		for caption_dict in COCO.database["annotations"]:
 			caption_ids.append(caption_dict["id"])
 		
@@ -105,7 +104,6 @@ class COCO:
 		captions = []
 		
 		# Iterating through all the captions in the database
-		# ! Check for the right key in the database
 		for caption_dict in COCO.database["annotations"]:
 			captions.append(caption_dict["caption"])
 		
@@ -269,22 +267,21 @@ class COCO:
 		Return
 		------
 		image_ids : List[int]
-			A list of the image ids that are similar to the query image
+			A list of the image ids that are similar to the query embedding
 		"""
-		scores_to_ids = {}
+		ids_to_scores = {}
 		
 		for image in COCO.database["images"]:
-			img_descriptor = gd(image["id"])
+			img_descriptor = generate_descriptor(image["id"])
 			
 			if img_descriptor is not None:
-				# TODO Create ability to import and export the weights from the model
-				scores_to_ids[image["id"]] = cosine_similarity(query, model(img_descriptor))
+				ids_to_scores[image["id"]] = cosine_similarity(query, model(img_descriptor))
 		
+		# ! Watch out for possible errors here
 		# This is just sorting the dictionary by the values, which are the similarities
-		scores_to_ids = {k: v for k, v in sorted(scores_to_ids.items(), key=lambda item: item[1])}
-		
-		# TODO Please troubleshoot this return statement just in case
-		return list(scores_to_ids.keys())[-k:]
+		# It is sorted in ascending order and is then passed to the list comprehension
+		# It only accepts the last k image ids as they are the greatest in similarity
+		return [k for k, v in sorted(ids_to_scores.items(), key=lambda item: item[1])][-k:]
         		
 	@classmethod
 	def display_images(cls, image_ids):

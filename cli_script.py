@@ -1,7 +1,6 @@
 import click
 from pathlib import Path
 
-import text_embedding as te
 import descriptors as de
 from img2caption_class import Img2Caption
 from COCO_class import COCO
@@ -35,7 +34,7 @@ def search(query_text, num_images, filepath, weights_filepath):
     COCO.import_database(Path(filepath))
     
     # Create the query embedding
-    query_embed = te.create_text_embedding(query_text)
+    query_embed = COCO.create_text_embedding(query_text)
     
     # Model is instantiated with proper weights
     model = Img2Caption()
