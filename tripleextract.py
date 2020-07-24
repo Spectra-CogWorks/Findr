@@ -65,34 +65,10 @@ def extract_triples(caption_ids):
     final_truples: np.ndarray shape=(1,300000)
         A numpy array where the row is a bunch of tuples.
     """
-    # Instantiating the model with the trained weights
-    model = Img2Caption()
-    model.load_model()
-    
-    # for each caption_id get 25 !!!!other!!!!! random caption_ids that belong to different images
-
-    # Get all caption IDs
-    #all_cap_ids = coco.get_all_caption_ids() 
-
-    
-    #Get all bad captions: every caption not in ResNet
-    #all_bad_caps = [] #filled with caption IDs
-    #for cap_ID in all_cap_ids:
-    #    if cap_ID not in captions:
-    #       all_bad_caps.append(cap_ID)
-    
-    """
-    Check if we need this ^
-    """
-
-    #get bad captions for each good_cap
-    final_truples = [] # [ (d_good_img, w_good_cap, d_bad_img), (d_good_img, w_good_cap, d_bad_img), (d_good_img, w_good_cap, d_bad_img)...] 
-                      #   , (d_good_img, w_good_cap, d_bad_img), (d_good_img, w_good_cap, d_bad_img), (d_good_img, w_good_cap, d_bad_img)...]  
-                      #                                 ...                                                                                   ]
-                      
+    final_truples = []
 
     for good_cap in caption_ids:
-        for i in range(10):
+        for i in range(10): #pylint: disable=unused-variable
             # generate the 25 captions that we choose the FINAL bad caption from
             bad_batch_cap = []
             bad_batch_img = []

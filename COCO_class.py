@@ -66,7 +66,7 @@ def strip_punc(text):
 
 class COCO:
 	# This is a class variable that can be accessed and changed through COCO.database (WARNING: directly changing class variables in general is never a good idea as it is )
-	def __init__(self, file_path=Path("./captions_train2014.json")):
+	def __init__(self, file_path=Path("./captions_train2014.json"), glove_path=r"./glove.6B.50d.txt.w2v"):
 		"""
 		Imports JSON file and stores its contents in the database class variable
 		
@@ -79,6 +79,7 @@ class COCO:
 		------
 		None
 		"""
+		self.glove = KeyedVectors.load_word2vec_format(glove_path, binary=False)
 		
 		if file_path.exists():
 			self.database = json.load(open(file_path))
@@ -122,8 +123,6 @@ class COCO:
 				self.img_ids_to_captions[caption_dict["image_id"]].append(caption_dict["caption"])
 			else:
 				self.img_ids_to_captions[caption_dict["image_id"]] = [caption_dict["caption"]]
-			
-			self.img_ids_to_captions[caption_dict["image_id"]] = caption_dict["caption"]
 			
 			self.caption_id_to_caption[caption_dict["id"]] = caption_dict["caption"]
 	
@@ -225,7 +224,7 @@ class COCO:
 		return self.create_text_embedding(self.caption_id_to_caption[caption_id])
 
 	
-	def create_text_embedding(self, text, path=r"./glove.6B.50d.txt.w2v"):
+	def create_text_embedding(self, text):
 		"""
 		Creates text embeddings of captions and query text.
 
@@ -239,8 +238,6 @@ class COCO:
 		embeddings : np.ndarray
 			A shape-(1, 50) numpy array of embeddings for the input text, weighed according to each word's IDF.
 		"""
-		glove = KeyedVectors.load_word2vec_format(path, binary=False)
-		
 		text = text.lower()
 		text = strip_punc(text)
 		text_array = text.split()
@@ -255,7 +252,7 @@ class COCO:
 				if item in cap:
 					count += 1
 			IDF = np.log10(len(captions) / count)
-			embedding += glove[item] * IDF
+			embedding += self.glove[item] * IDF
 			
 		embedding /= np.linalg.norm(embedding)
 		
