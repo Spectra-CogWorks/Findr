@@ -4,25 +4,28 @@ import pickle
 with open("resnet18_features.pkl", mode="rb") as opened_file:
     resnet = pickle.load(opened_file)
 
-# TODO Please ensure that the function can accept a List[int]
-def generate_descriptor(imgID):
-    """ Generates decriptor from resnet dictionary if imgID is a key. Else, returns none 
+# TODO Please check that this function works
+def generate_descriptor(imgIDs):
+    """ Generates decriptor from resnet dictionary if imgIDs are keys. Else, returns none in their place
         
     Parameters
     ----------
-    imgID: int
-        the image id
+    imgID: List[int]
+        The image ids
             
     Returns
     -------
     descriptor: np.ndarray shape-(1,512)
-        the descriptor associated with the image id
+        The descriptor associated with the image id
     or
-    
     None
-        
     """
-    if imgID in resnet.keys():
-        return resnet[imgID]
-    else:
-        return None
+    descriptors = []
+    
+    for imgID in imgIDs:
+        if imgID in resnet.keys():
+            descriptors.append(resnet[imgID])
+        else:
+            descriptors.append(None)
+            
+    return descriptors

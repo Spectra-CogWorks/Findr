@@ -1,5 +1,6 @@
 from mynn.layers.dense import dense
 from mygrad.nnet.initializers import he_normal
+import numpy as np
 
 class Img2Caption:
     def __init__(self, dim_input=512, dim_encoded=50):
@@ -42,3 +43,37 @@ class Img2Caption:
         Tuple[Tensor, ...]
             A tuple containing all of the learnable parameters for our model """
         return tuple(self.dense1.parameters)
+    
+    def export_weights(self, filepath="weights.npy"):
+        """Export the model weights as a npy file
+        
+        Parameters
+        ----------
+        filepath : str
+            The filepath to save the npy file to
+        
+        Returns
+        -------
+        None
+        """
+        # TODO Double check to make sure that the numpy array will be storing the weight and bias properly
+        np.save(filepath, np.array(self.parameters))
+        
+    def import_weights(self, filepath="weights.npy"):
+        """Import the model weights from a npy file
+        
+        Parameters
+        ----------
+        filepath : str
+            The filepath to import the npy file from
+        
+        Returns
+        -------
+        None
+        """
+        
+        weights = tuple(np.load(filepath))
+        
+        # TODO Double check that the weight and bias are assigned properly
+        self.dense1.weight = weights[0]
+        self.dense1.bias = weights[1]

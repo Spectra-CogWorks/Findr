@@ -4,9 +4,7 @@ from pathlib import Path
 import text_embedding as te
 import descriptors as de
 from img2caption_class import Img2Caption
-import margin_ranking_loss as mre
-import tripleextract as triple
-from COCO_class import COCO, cosine_similarity, download_image
+from COCO_class import COCO
 
 # We might have to look into coding chained commands to prevent database from having issues
 @click.group()
@@ -39,12 +37,12 @@ def search(query_text, k, filepath, weights_filepath):
     # Create the query embedding
     query_embed = te.create_text_embedding(query_text)
     
-    # TODO Import weights and create model using them
-    # Currently just assuming that model gets instantiated here
+    # TODO Doublecheck the model weight and bias import and export functions
+    # Model is instantiated with proper weights
     model = Img2Caption()
-    # model.import(Path(weights_filepath))
+    model.import_weights(Path(weights_filepath))
     
-    # TODO Check that generate_descriptor() can accept a List[int]
+    # TODO Check that generate_descriptor() is correct
     # This gets the embeddings of all the images
     img_ids = COCO.find_similar_images(model, query_embed, k)
     
