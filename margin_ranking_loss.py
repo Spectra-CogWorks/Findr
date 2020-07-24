@@ -11,17 +11,18 @@ def mr_loss(model, triple):
     Parameters
     ----------
     model : Img2Caption
-        The model used to convert the image descriptors to 
+        The model used to convert the image descriptors to word embeddings.
     
     triple : np.ndarray(tuple) - shape(num_tuples, 3)
-        A numpy array containing tuples containing three elements: the descriptor of the "good" image,
-        the caption embedding corresponding to that image, and the descriptor of the "bad" image.
+        A numpy array containing tuples with three elements: the descriptor of a "good" image,
+        the caption embedding corresponding to that image, and the descriptor of a "bad" image.
 
     Returns
     -------
     margin_ranking_loss : mg.Tensor
-        The margin ranking loss between the similarities (dot products) between the "good"
-        image and the caption/"bad" image.
+        The margin ranking loss of the similarities (dot products) between the word embeddings for:
+            the "good" image and "good" caption,
+            the "good" image and "bad image".
     """
     # S_good = mg.dot(triple[1], model(triple[0])))
     # S_bad = mg.dot(triple[1], model(triple[2])))
