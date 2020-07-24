@@ -25,18 +25,19 @@ class Img2Caption:
         
         Parameters
         ----------
-        x : numpy.ndarray, shape = (512,)
+        x : numpy.ndarray, shape = (M,512)
+            M is the number of rows
             
         Returns
         -------
-        encoded : numpy.ndarray, shape = (50,)
+        encoded : numpy.ndarray, shape = (M,50)
         
         """
     
         unnorm_ans = self.dense1(x)
         
         # We have to turn the output into a unit vector by dividing by the sum of the squares of the unnormalized result
-        return unnorm_ans / (mg.sqrt(mg.sum(unnorm_ans ** 2)))
+        return ( unnorm_ans / (mg.sqrt(mg.sum(unnorm_ans ** 2, axis=1))) ).reshape(unnorm_ans.shape[0],-1)
     @property
     def parameters(self):
         """ A convenience function for getting all the parameters of our model.
