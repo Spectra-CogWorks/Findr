@@ -1,6 +1,5 @@
 import mygrad as mg
-import mynn
-from mynn.losses.margin_ranking_loss import margin_ranking_loss
+from mygrad.nnet.losses.margin_ranking_loss import margin_ranking_loss
 
 from img2caption_class import Img2Caption
 
@@ -23,10 +22,10 @@ def mr_loss(model, triple):
         The margin ranking loss between the similarities (dot products) between the "good"
         image and the caption/"bad" image.
     """
-    # S_good = mg.dot(model(triple[0]), triple[1]))
-    # S_bad = mg.dot(model(triple[0]), model(triple[2]))
+    # S_good = mg.dot(triple[1], model(triple[0])))
+    # S_bad = mg.dot(triple[1], model(triple[2])))
     # margin_ranking_loss(S_good, S_bad, y, margin)
-    return margin_ranking_loss(mg.dot(model(triple[0]), triple[1]), 
-                               mg.dot(model(triple[0]), model(triple[2])), 
+    return margin_ranking_loss(mg.sum(triple[1] * model(triple[0])), 
+                               mg.sum(triple[1] * model(triple[2])), 
                                1, 
                                0.1)

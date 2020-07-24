@@ -31,7 +31,11 @@ class Img2Caption:
         encoded : numpy.ndarray, shape = (50,)
         
         """
-        return self.dense1(x)
+    
+        unnorm_ans = self.dense1(x)
+        
+        # We have to turn the output into a unit vector by dividing by the sum of the squares of the unnormalized result
+        return unnorm_ans / (mg.sum(unnorm_ans ** 2))
     @property
     def parameters(self):
         """ A convenience function for getting all the parameters of our model.
