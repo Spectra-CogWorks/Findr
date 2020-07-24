@@ -7,7 +7,6 @@ import requests
 from PIL import Image
 import matplotlib.pyplot as plt
 
-from text_embedding import create_text_embedding
 from descriptors import generate_descriptor as gd
 from img2caption_class import Img2Caption
 
@@ -81,7 +80,7 @@ class COCO:
 		# Iterating through all the captions in the database
 		# ! Check for the right key in the database
 		for caption_dict in COCO.database["annotations"]:
-			caption_ids.append(caption_dict["annotations"])
+			caption_ids.append(caption_dict["id"])
 		
 		return caption_ids
 
@@ -100,7 +99,7 @@ class COCO:
 		# Iterating through all the captions in the database
 		# ! Check for the right key in the database
 		for caption_dict in COCO.database["annotations"]:
-			captions.append(caption_dict["annotations"])
+			captions.append(caption_dict["caption"])
 		
 		return captions
 		
@@ -172,8 +171,9 @@ class COCO:
 		"""
 		return [caption["caption"] for caption in COCO.database["annotations"] if caption["image_id"] == image_id]
 
-	@classmethod
-	def get_caption_embedding(cls, caption_id):
+# To-Do: the functionality of this method must be moved elsewhere (main method, etc)
+#	@classmethod
+#	def get_caption_embedding(cls, caption_id):
 		"""Gets the embedding for ID
 		
 		Parameters
@@ -186,9 +186,9 @@ class COCO:
 		caption_embed : np.ndarray - shape(50,)
 			The weighted sum embedding fo the specified caption
 		"""
-		for caption_dict in COCO.database["annotations"]:
-			if caption_dict["id"] == caption_id:
-				return create_text_embedding(caption_dict["caption"])
+#		for caption_dict in COCO.database["annotations"]:
+#			if caption_dict["id"] == caption_id:
+#				return create_text_embedding(caption_dict["caption"])
 
 	@classmethod
 	def find_similar_images(cls, model, query, k):
