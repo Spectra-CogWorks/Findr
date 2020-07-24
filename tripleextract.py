@@ -1,6 +1,6 @@
 "file for extracting triples"
 import json
-import pickle as pkl
+import pickle
 import numpy as np
 from COCO_class import cosine_similarity, COCO
 from descriptors import generate_descriptor
@@ -25,9 +25,9 @@ def create_train_and_test():
             The ndarray of tuples (triplets) for val_data.
     """
     # get image Ids
-    img_ids = resnet.keys() # List
+    img_ids = list(resnet.keys()) # List
 
-    train_imgID = np.random.choice(img_ids, len(img_ids)*4/5, replace=False)
+    train_imgID = np.random.choice(img_ids, int(len(img_ids)*4/5), replace=False)
     val_imgID = []
     for img in img_ids:
         if img not in train_imgID:
@@ -36,7 +36,8 @@ def create_train_and_test():
     # populate train_captions with 30000 captions
     train_captions = []
     for img in train_imgID:
-        train_captions.append(i for i in COCO.get_caption_ids(img))
+        for i in COCO.get_caption_ids(img):
+            train_captions.append(i)
     train_captions_final = np.random.choice(train_captions, 30000, replace=False)
 
     # populate val_captions with 10000 captions
