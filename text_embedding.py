@@ -3,6 +3,8 @@ import gensim
 from gensim.models.keyedvectors import KeyedVectors
 import re, string
 
+from COCO_class import COCO
+
 path = r"./glove.6B.50d.txt.w2v"
 glove = KeyedVectors.load_word2vec_format(path, binary=False)
 

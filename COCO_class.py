@@ -6,10 +6,10 @@ import io
 import requests
 from PIL import Image
 import matplotlib.pyplot as plt
-from collections import Counter
 
 from text_embedding import create_text_embedding
 from descriptors import generate_descriptor as gd
+from img2caption_class import Img2Caption
 
 def cosine_similarity(d1, d2):
 	"""Finds the cosine similarity between two image vectors
@@ -81,9 +81,9 @@ class COCO:
 		# Iterating through all the captions in the database
 		# ! Check for the right key in the database
 		for caption_dict in COCO.database["annotations"]:
-			captions_ids.append(caption_dict["annotations"])
+			caption_ids.append(caption_dict["annotations"])
 		
-		return captions_ids
+		return caption_ids
 
 	@classmethod
 	def get_all_captions(cls):
@@ -179,7 +179,7 @@ class COCO:
 		Parameters
 		----------
 		caption_id: int
-			The ID for which to genrate for
+			The ID for which to generate for
 
 		Returns
 		-------
@@ -191,13 +191,16 @@ class COCO:
 				return create_text_embedding(caption_dict["caption"])
 
 	@classmethod
-	def find_similar_images(cls, query, k):
-		"""Create function that finds top k similar images to a query image
+	def find_similar_images(cls, model, query, k):
+		"""Create function that finds top k similar images to a query embedding
 		
 		Parameters
 		----------
-		query : np.ndarray - shape(512,)
-			The descriptor vector of the query image
+		model : Img2Caption
+			The trained model to convert images to image embeddings
+		
+		query : np.ndarray - shape(50,)
+			The embedding of the query
 			
 		k : int
 			The number of images to return
@@ -213,11 +216,20 @@ class COCO:
 			img_descriptor = gd(image["id"])
 			
 			if img_descriptor is not None:
-				scores_to_ids[image["id"]] = cosine_similarity(query, img_descriptor)
-				
+				# TODO Create ability to import and export the weights from the model
+				scores_to_ids[image["id"]] = cosine_similarity(query, model(img_descriptor))
+		
+		# This is just sorting the dictionary by the values, which are the similarities
 		scores_to_ids = {k: v for k, v in sorted(scores_to_ids.items(), key=lambda item: item[1])}
 		
-		return np.ndarray(scores_to_ids.keys())[:k]
+		# TODO Please troubleshoot this return statement just in case
+		return list(scores_to_ids.keys())[-k:]
+		
+	@classmethod
+	def find_top_images(cls):
+		"""
+		"""
+		pass
         		
 	@classmethod
 	def display_images(cls, image_ids):
@@ -238,6 +250,6 @@ class COCO:
 				img = download_image(image["coco_url"])
 				img_arr = np.array(img)
 
-				fig, ax = plt.subplots()
+				fig, ax = plt.subplots() # pylint: disable=unused-variable
 				ax.imshow(img_arr)
 				plt.show(block=True)

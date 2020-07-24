@@ -4,6 +4,7 @@ import pickle
 with open("resnet18_features.pkl", mode="rb") as opened_file:
     resnet = pickle.load(opened_file)
 
+# TODO Please ensure that the function can accept a List[int]
 def generate_descriptor(imgID):
     """ Generates decriptor from resnet dictionary if imgID is a key. Else, returns none 
         
