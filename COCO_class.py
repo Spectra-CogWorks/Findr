@@ -46,13 +46,27 @@ def download_image(img_url: str) -> Image:
 
     response = requests.get(img_url)
     return Image.open(io.BytesIO(response.content))
+	
+def strip_punc(text):
+	""" 
+	Removes all punctuation from a string.
+
+	Parameters
+	----------
+	text : str
+		The text to be stripped of punctuation.
+
+	Returns
+	-------
+	str
+		The text with all punctuation removed.
+	"""
+	# substitutes all punctuation marks with ""
+	return punc_regex.sub('', text)
 
 class COCO:
 	# This is a class variable that can be accessed and changed through COCO.database (WARNING: directly changing class variables in general is never a good idea as it is )
-	database = {}
-	
-	@classmethod
-	def import_database(cls, file_path=Path("./captions_train2014.json")):
+	def __init__(self, file_path=Path("./captions_train2014.json")):
 		"""
 		Imports JSON file and stores its contents in the database class variable
 		
@@ -67,12 +81,53 @@ class COCO:
 		"""
 		
 		if file_path.exists():
-			COCO.database = json.load(open(file_path))
+			self.database = json.load(open(file_path))
+			self.init_image_mappings()
+			self.init_annotation_mappings()
 		else:
 			print("Import Error: Invalid file path")
+
+	def init_image_mappings(self):
+		"""Method to be called once by `__init__` to set up instance variables for image mappings
+		"""
+		self.image_ids = []
+
+		for image in COCO.database["images"]:
+			self.image_ids.append(image["id"])
+
+	def init_annotation_mappings(self):
+		"""Method to initialize all caption mapping instance variables. It is called once in __init__ to
+		"""
+		self.all_caption_ids = []
+		self.all_captions = []
+		self.caption_id_to_img_id = {}
+		self.img_ids_to_caption_ids = {}
+		self.img_ids_to_captions = {}
+		
+		self.caption_id_to_caption = {}
+		
+		for caption_dict in self.database["annotations"]:
+			self.all_caption_ids.append(caption_dict["id"])
+			
+			self.all_captions.append(caption_dict["caption"])
+			
+			self.caption_id_to_img_id[caption_dict["id"]] = caption_dict["image_id"]
+				
+			if caption_dict["image_id"] in self.img_ids_to_caption_ids:
+				self.img_ids_to_caption_ids[caption_dict["image_id"]].append([caption["id"]])
+			else:
+				self.img_ids_to_caption_ids[caption_dict["image_id"]] = [caption["id"]]
+				
+			if caption_dict["image_id"] in self.img_ids_to_captions:
+				self.img_ids_to_captions[caption_dict["image_id"]].append([caption["caption"]])
+			else:
+				self.img_ids_to_captions[caption_dict["image_id"]] = [caption["caption"]]
+			
+			self.img_ids_to_captions[caption_dict["image_id"]] = caption["caption"]
+			
+			self.caption_id_to_caption[caption_dict["id"]] = caption_dict["caption"]
 	
-	@classmethod
-	def get_all_caption_ids(cls):
+	def get_all_caption_ids(self):
 		"""Resurns a list of caption IDs
 		
 		Returns
@@ -80,16 +135,10 @@ class COCO:
 		caption_ids : List[int]
 
 		"""
-		caption_ids = []
-		
-		# Iterating through all the captions in the database
-		for caption_dict in COCO.database["annotations"]:
-			caption_ids.append(caption_dict["id"])
-		
-		return caption_ids
+		return self.all_caption_ids
 
-	@classmethod
-	def get_all_captions(cls):
+	
+	def get_all_captions(self):
 		"""
 		Gets all captions from the database
 		
@@ -98,16 +147,10 @@ class COCO:
 		captions : List[string]
 			List of captions
 		"""
-		captions = []
+		return self.all_captions
 		
-		# Iterating through all the captions in the database
-		for caption_dict in COCO.database["annotations"]:
-			captions.append(caption_dict["caption"])
-		
-		return captions
-		
-	@classmethod
-	def get_all_image_ids(cls):
+	
+	def get_all_image_ids(self):
 		"""Gets all image IDs as a list
 
 		Returns
@@ -115,15 +158,9 @@ class COCO:
 		image_ids : List[int]
 			The image IDs
 		"""
-		ids = []
-		
-		for image in COCO.database["images"]:
-			ids.append(image["id"])
-
-		return ids
-
-	@classmethod
-	def get_image_id(cls, caption_id):
+		return self.image_ids
+	
+	def get_image_id(self, caption_id):
 		"""Get the associated image ID from a caption ID
 		
 		Parameters
@@ -135,15 +172,13 @@ class COCO:
 		-------
 		image_id : int
 		"""
-		for caption_dict in COCO.database["annotations"]:
-			if caption_dict["id"] == caption_id:
-				return caption_dict["image_id"]
-		
-		print("No caption with given ID was found. This function has returned a None-type object")
-		return None
-
-	@classmethod
-	def get_caption_ids(cls, image_id):
+		if caption_id in self.caption_id_to_img_id:
+			return self.caption_id_to_img_id[caption_id]
+		else:
+			print("No caption with given ID was found. This function has returned a None-type object")
+			return None
+	
+	def get_caption_ids(self, image_id):
 		""" Gets associated caption IDs for an image ID
 
 		Parameters
@@ -156,10 +191,9 @@ class COCO:
 		caption_ids : List[int]
 			Caption IDs for the list items
 		"""
-		return [caption["id"] for caption in COCO.database["annotations"] if caption["image_id"] == image_id]
-
-	@classmethod
-	def get_captions(cls, image_id):
+		return self.img_ids_to_caption_ids[image_id]
+	
+	def get_captions(self, image_id):
 		"""Gets the captions associated with the image ID
 		
 		Parameters
@@ -172,11 +206,10 @@ class COCO:
 		captions : List[str]
 			The captions
 		"""
-		return [caption["caption"] for caption in COCO.database["annotations"] if caption["image_id"] == image_id]
-
-	# To-Do: the functionality of this method must be moved elsewhere (main method, etc)
-	@classmethod
-	def get_caption_embedding(cls, caption_id):
+		return self.img_ids_to_captions[image_id]
+	
+	# ? DO NOT MOVE TO __init___
+	def get_caption_embedding(self, caption_id):
 		"""Gets the embedding for ID 
 		
 		Parameters
@@ -188,31 +221,11 @@ class COCO:
 		-------
 		caption_embed : np.ndarray - shape(50,)
 			The weighted sum embedding fo the specified caption
-		""" #pylint: disable=unreachable
-		for caption_dict in COCO.database["annotations"]:
-			if caption_dict["id"] == caption_id:
-				return cls.create_text_embedding(caption_dict["caption"])
-
-	@classmethod
-	def strip_punc(cls, text):
 		""" 
-		Removes all punctuation from a string.
+		return self.create_text_embedding(self.caption_id_to_caption[caption_id])
 
-		Parameters
-		----------
-		text : str
-			The text to be stripped of punctuation.
-
-		Returns
-		-------
-		str
-			The text with all punctuation removed.
-		"""
-		# substitutes all punctuation marks with ""
-		return punc_regex.sub('', text)
-
-	@classmethod
-	def create_text_embedding(cls, text, path=r"./glove.6B.50d.txt.w2v"):
+	
+	def create_text_embedding(self, text, path=r"./glove.6B.50d.txt.w2v"):
 		"""
 		Creates text embeddings of captions and query text.
 
@@ -229,10 +242,10 @@ class COCO:
 		glove = KeyedVectors.load_word2vec_format(path, binary=False)
 		
 		text = text.lower()
-		text = cls.strip_punc(text)
+		text = strip_punc(text)
 		text_array = text.split()
 		
-		captions = COCO.get_all_captions()
+		captions = self.get_all_captions()
 		
 		embedding = np.zeros((1, 50))
 		
@@ -248,8 +261,8 @@ class COCO:
 		
 		return embedding
 
-	@classmethod
-	def find_similar_images(cls, model, query, k):
+	
+	def find_similar_images(self, model, query, k):
 		"""Create function that finds top k similar images to a query embedding
 		
 		Parameters
@@ -270,7 +283,7 @@ class COCO:
 		"""
 		ids_to_scores = {}
 		
-		for image in COCO.database["images"]:
+		for image in self.database["images"]:
 			img_descriptor = generate_descriptor(image["id"])
 			
 			if img_descriptor is not None:
@@ -282,8 +295,7 @@ class COCO:
 		# It only accepts the last k image ids as they are the greatest in similarity
 		return [k for k, v in sorted(ids_to_scores.items(), key=lambda item: item[1])][-k:]
         		
-	@classmethod
-	def display_images(cls, image_ids):
+	def display_images(self, image_ids):
 		"""Displays images using given image IDs
 		
 		Parameters
@@ -296,7 +308,7 @@ class COCO:
 		None
 		"""
 		
-		for image in COCO.database["images"]:
+		for image in self.database["images"]:
 			if image["id"] in image_ids:
 				img = download_image(image["coco_url"])
 				img_arr = np.array(img)
@@ -304,3 +316,83 @@ class COCO:
 				fig, ax = plt.subplots() # pylint: disable=unused-variable
 				ax.imshow(img_arr)
 				plt.show(block=True)
+
+coco = COCO()		-------
+		None
+		"""
+		
+		for image in self.database["images"]:
+			if image["id"] in image_ids:
+				img = download_image(image["coco_url"])
+				img_arr = np.array(img)
+
+				fig, ax = plt.subplots() # pylint: disable=unused-variable
+				ax.imshow(img_arr)
+				plt.show(block=True)
+
+coco = COCO()		-------
+		None
+		"""
+		
+		for image in self.database["images"]:
+			if image["id"] in image_ids:
+				img = download_image(image["coco_url"])
+				img_arr = np.array(img)
+
+				fig, ax = plt.subplots() # pylint: disable=unused-variable
+				ax.imshow(img_arr)
+				plt.show(block=True)
+
+coco = COCO()		-------
+		None
+		"""
+		
+		for image in self.database["images"]:
+			if image["id"] in image_ids:
+				img = download_image(image["coco_url"])
+				img_arr = np.array(img)
+
+				fig, ax = plt.subplots() # pylint: disable=unused-variable
+				ax.imshow(img_arr)
+				plt.show(block=True)
+
+coco = COCO()		-------
+		None
+		"""
+		
+		for image in self.database["images"]:
+			if image["id"] in image_ids:
+				img = download_image(image["coco_url"])
+				img_arr = np.array(img)
+
+				fig, ax = plt.subplots() # pylint: disable=unused-variable
+				ax.imshow(img_arr)
+				plt.show(block=True)
+
+coco = COCO()		-------
+		None
+		"""
+		
+		for image in self.database["images"]:
+			if image["id"] in image_ids:
+				img = download_image(image["coco_url"])
+				img_arr = np.array(img)
+
+				fig, ax = plt.subplots() # pylint: disable=unused-variable
+				ax.imshow(img_arr)
+				plt.show(block=True)
+
+coco = COCO()		-------
+		None
+		"""
+		
+		for image in self.database["images"]:
+			if image["id"] in image_ids:
+				img = download_image(image["coco_url"])
+				img_arr = np.array(img)
+
+				fig, ax = plt.subplots() # pylint: disable=unused-variable
+				ax.imshow(img_arr)
+				plt.show(block=True)
+
+coco = COCO()

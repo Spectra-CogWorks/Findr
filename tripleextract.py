@@ -2,7 +2,7 @@
 import json
 import pickle
 import numpy as np
-from COCO_class import cosine_similarity, COCO
+from COCO_class import cosine_similarity, coco
 from descriptors import generate_descriptor
 from img2caption_class import Img2Caption
 
@@ -36,14 +36,14 @@ def create_train_and_test():
     # populate train_captions with 30000 captions
     train_captions = []
     for img in train_imgID:
-        for i in COCO.get_caption_ids(img):
+        for i in coco.get_caption_ids(img):
             train_captions.append(i)
     train_captions_final = np.random.choice(train_captions, 30000, replace=False)
 
     # populate val_captions with 10000 captions
     val_captions = []
     for img in val_imgID:
-        val_captions.append(i for i in COCO.get_caption_ids(img))
+        val_captions.append(i for i in coco.get_caption_ids(img))
     val_captions_final = np.random.choice(val_captions, 10000, replace=False)
 
     # use extract_triples function to get final train/val data
@@ -71,7 +71,7 @@ def extract_triples(caption_ids):
     # for each caption_id get 25 !!!!other!!!!! random caption_ids that belong to different images
 
     # Get all caption IDs
-    #all_cap_ids = COCO.get_all_caption_ids() 
+    #all_cap_ids = coco.get_all_caption_ids() 
 
     
     #Get all bad captions: every caption not in ResNet
@@ -97,8 +97,8 @@ def extract_triples(caption_ids):
             bad_batch_img = []
             while len(bad_batch_cap) < 25:
                 bad_cap = random.choice(caption_ids)
-                bad_img = COCO.get_image_id(bad_cap)
-                if  bad_img in bad_batch_img or bad_img == COCO.get_image_id(good_cap):
+                bad_img = coco.get_image_id(bad_cap)
+                if  bad_img in bad_batch_img or bad_img == coco.get_image_id(good_cap):
                     continue
                 else:
                     bad_batch_cap.append(bad_cap)
@@ -108,13 +108,14 @@ def extract_triples(caption_ids):
 
             cos_sims = {}
             for bad_cap in bad_batch_cap:
-                cos_sim = cosine_similarity(COCO.get_caption_embedding(good_cap), COCO.get_caption_embedding(bad_cap))
+                cos_sim = cosine_similarity(coco.get_caption_embedding(good_cap), coco.get_caption_embedding(bad_cap))
                 cos_sims[cos_sim] = bad_cap
             final_bad_cap = cos_sims[max(cos_sims.keys())]
 
-            truple = (generate_descriptor(COCO.get_image_id(good_cap)),
-                    COCO.get_caption_embedding(good_cap),
-                    generate_descriptor(COCO.get_image_id(final_bad_cap)))
+            truple = (generate_descriptor(coco.get_image_id(good_cap)),
+                    coco.get_caption_embedding(good_cap),
+                    generate_descriptor(coco.get_image_id(final_bad_cap)))
+
             final_truples.append(truple)
     
     return np.array(final_truples)
