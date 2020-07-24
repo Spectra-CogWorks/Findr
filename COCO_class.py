@@ -6,9 +6,17 @@ import io
 import requests
 from PIL import Image
 import matplotlib.pyplot as plt
+import gensim
+from gensim.models.keyedvectors import KeyedVectors
+import re, string
 
 from descriptors import generate_descriptor as gd
 from img2caption_class import Img2Caption
+
+path = r"./glove.6B.50d.txt.w2v"
+glove = KeyedVectors.load_word2vec_format(path, binary=False)
+
+punc_regex = re.compile('[{}]'.format(re.escape(string.punctuation)))
 
 def cosine_similarity(d1, d2):
 	"""Finds the cosine similarity between two image vectors
@@ -171,10 +179,10 @@ class COCO:
 		"""
 		return [caption["caption"] for caption in COCO.database["annotations"] if caption["image_id"] == image_id]
 
-# To-Do: the functionality of this method must be moved elsewhere (main method, etc)
-#	@classmethod
-#	def get_caption_embedding(cls, caption_id):
-		"""Gets the embedding for ID
+	# To-Do: the functionality of this method must be moved elsewhere (main method, etc)
+	@classmethod
+	def get_caption_embedding(cls, caption_id):
+		"""Gets the embedding for ID 
 		
 		Parameters
 		----------
@@ -185,10 +193,63 @@ class COCO:
 		-------
 		caption_embed : np.ndarray - shape(50,)
 			The weighted sum embedding fo the specified caption
+		""" #pylint: disable=unreachable
+		for caption_dict in COCO.database["annotations"]:
+			if caption_dict["id"] == caption_id:
+				return cls.create_text_embedding(caption_dict["caption"])
+
+	@classmethod
+	def strip_punc(cls, text):
+		""" 
+		Removes all punctuation from a string.
+
+		Parameters
+		----------
+		text : str
+			The text to be stripped of punctuation.
+
+		Returns
+		-------
+		str
+			The text with all punctuation removed.
 		"""
-#		for caption_dict in COCO.database["annotations"]:
-#			if caption_dict["id"] == caption_id:
-#				return create_text_embedding(caption_dict["caption"])
+		# substitutes all punctuation marks with ""
+		return punc_regex.sub('', text)
+
+	@classmethod
+	def create_text_embedding(cls, text):
+		"""
+		Creates text embeddings of captions and query text.
+
+		Parameters
+		----------
+		text : str
+			The text to be converted into word embeddings.
+
+		Returns
+		-------
+		embeddings : np.ndarray
+			A shape-(1, 50) numpy array of embeddings for the input text, weighed according to each word's IDF.
+		"""
+		text = text.lower()
+		text = cls.strip_punc(text)
+		text_array = text.split()
+		
+		captions = COCO.get_all_captions()
+		
+		embedding = np.zeros((1, 50))
+		
+		for item in text_array:
+			count = 0
+			for cap in captions:
+				if item in cap:
+					count += 1
+			IDF = np.log10(len(captions) / count)
+			embedding += glove[item] * IDF
+			
+		embedding /= np.linalg.norm(embedding)
+		
+		return embedding
 
 	@classmethod
 	def find_similar_images(cls, model, query, k):
@@ -224,12 +285,6 @@ class COCO:
 		
 		# TODO Please troubleshoot this return statement just in case
 		return list(scores_to_ids.keys())[-k:]
-		
-	@classmethod
-	def find_top_images(cls):
-		"""
-		"""
-		pass
         		
 	@classmethod
 	def display_images(cls, image_ids):
