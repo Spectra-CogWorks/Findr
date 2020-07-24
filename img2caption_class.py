@@ -44,12 +44,12 @@ class Img2Caption:
             A tuple containing all of the learnable parameters for our model """
         return tuple(self.dense1.parameters)
     
-    def save_model(self, path):
+    def save_model(self, path="weights.npz"):
         """Path to .npz file where model parameters will be saved."""
         with open(path, "wb") as f:
             np.savez(f, *(x.data for x in self.parameters))
 
-    def load_model(self, path):
+    def load_model(self, path="weights.npz"):
         with open(path, "rb") as f:
             for param, (name, array) in zip(self.parameters, np.load(f).items()): # pylint: disable=unused-variable
                 param.data[:] = array
