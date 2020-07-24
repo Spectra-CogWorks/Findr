@@ -12,8 +12,8 @@ def mr_loss(model, triple):
     model : Img2Caption
         The model used to convert the image descriptors to 
     
-    triple : tuple
-        A tuple containing three elements: the descriptor of the "good" image,
+    triple : np.ndarray(tuple) - shape(num_tuples, 3)
+        A numpy array containing tuples containing three elements: the descriptor of the "good" image,
         the caption embedding corresponding to that image, and the descriptor of the "bad" image.
 
     Returns
@@ -25,7 +25,7 @@ def mr_loss(model, triple):
     # S_good = mg.dot(triple[1], model(triple[0])))
     # S_bad = mg.dot(triple[1], model(triple[2])))
     # margin_ranking_loss(S_good, S_bad, y, margin)
-    return margin_ranking_loss(mg.sum(triple[1] * model(triple[0])), 
-                               mg.sum(triple[1] * model(triple[2])), 
+    return margin_ranking_loss(mg.sum(triple[:][1] * model(triple[:][0])), 
+                               mg.sum(triple[:][1] * model(triple[:][2])), 
                                1, 
                                0.1)

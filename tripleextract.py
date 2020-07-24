@@ -115,7 +115,6 @@ def extract_triples(caption_ids):
             truple = (generate_descriptor(COCO.get_image_id(good_cap)),
                     COCO.get_caption_embedding(good_cap),
                     generate_descriptor(COCO.get_image_id(final_bad_cap)))
-
             final_truples.append(truple)
     
     return np.array(final_truples)
