@@ -1,5 +1,6 @@
 from mynn.layers.dense import dense
 from mygrad.nnet.initializers import he_normal
+import mygrad as mg
 import numpy as np
 
 class Img2Caption:
@@ -35,7 +36,7 @@ class Img2Caption:
         unnorm_ans = self.dense1(x)
         
         # We have to turn the output into a unit vector by dividing by the sum of the squares of the unnormalized result
-        return unnorm_ans / (mg.sum(unnorm_ans ** 2))
+        return unnorm_ans / (mg.sqrt(mg.sum(unnorm_ans ** 2)))
     @property
     def parameters(self):
         """ A convenience function for getting all the parameters of our model.
