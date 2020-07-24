@@ -60,18 +60,14 @@ def extract_triples(caption_ids):
     
     Returns
     -------
-    final_truples: np.ndarray
-        A numpy array where each row is the list of tuples
-        row  = [ (d_good_img, w_good_cap, d_bad_img), (...), ... ].
+    final_truples: np.ndarray shape=(1,300000)
+        A numpy array where the row is a bunch of tuples.
     """
     # Instantiating the model with the trained weights
     model = Img2Caption()
     model.load_model()
     
     # for each caption_id get 25 !!!!other!!!!! random caption_ids that belong to different images
-
-    """
-    """
 
     # Get all caption IDs
     #all_cap_ids = COCO.get_all_caption_ids() 
@@ -88,14 +84,12 @@ def extract_triples(caption_ids):
     """
 
     #get bad captions for each good_cap
-    final_truples = [] # [ [(d_good_img, w_good_cap, d_bad_img), (d_good_img, w_good_cap, d_bad_img), (d_good_img, w_good_cap, d_bad_img)...] 
-                      #   [(d_good_img, w_good_cap, d_bad_img), (d_good_img, w_good_cap, d_bad_img), (d_good_img, w_good_cap, d_bad_img)...]  
+    final_truples = [] # [ (d_good_img, w_good_cap, d_bad_img), (d_good_img, w_good_cap, d_bad_img), (d_good_img, w_good_cap, d_bad_img)...] 
+                      #   , (d_good_img, w_good_cap, d_bad_img), (d_good_img, w_good_cap, d_bad_img), (d_good_img, w_good_cap, d_bad_img)...]  
                       #                                 ...                                                                                   ]
                       
 
     for good_cap in caption_ids:
-
-        truple_list = []
         for i in range(10):
             # generate the 25 captions that we choose the FINAL bad caption from
             bad_batch_cap = []
@@ -120,10 +114,7 @@ def extract_triples(caption_ids):
             truple = (generate_descriptor(COCO.get_image_id(good_cap)),
                     COCO.get_caption_embedding(good_cap),
                     generate_descriptor(COCO.get_image_id(final_bad_cap))
-            truple_list.append(truple)
 
-        final_truples.append(truple_list)
+            final_truples.append(truple)
     
     return np.array(final_truples)
-
-
