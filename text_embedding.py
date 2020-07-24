@@ -20,7 +20,7 @@ def strip_punc(text):
     Returns
     -------
     str
-        the corpus with all punctuation removed.
+        The text with all punctuation removed.
     """
     # substitutes all punctuation marks with ""
     return punc_regex.sub('', text)
