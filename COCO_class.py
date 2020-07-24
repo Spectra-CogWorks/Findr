@@ -9,11 +9,13 @@ import matplotlib.pyplot as plt
 import gensim
 from gensim.models.keyedvectors import KeyedVectors
 import re, string
+from typing import Dict, List, Iterable
+from collections import Counter
 
 from descriptors import generate_descriptor
 from img2caption_class import Img2Caption
 
-punc_regex = re.compile('[{}]'.format(re.escape(string.punctuation)))
+_PUNC_REGEX = re.compile('[{}]'.format(re.escape(string.punctuation)))
 
 def cosine_similarity(d1, d2):
 	"""Finds the cosine similarity between two image vectors
@@ -29,7 +31,7 @@ def cosine_similarity(d1, d2):
 	------
 	float
 	"""
-	return np.dot(d1, d2) # / (norm(d1) * norm(d2)) - For non-unit vectors
+	return np.sum(d1.flatten() * d2.flatten()) # / (norm(d1) * norm(d2)) - For non-unit vectors
 	
 def download_image(img_url: str) -> Image:
     """ Fetches an image from the web.
@@ -46,27 +48,10 @@ def download_image(img_url: str) -> Image:
 
     response = requests.get(img_url)
     return Image.open(io.BytesIO(response.content))
-	
-def strip_punc(text):
-	""" 
-	Removes all punctuation from a string.
-
-	Parameters
-	----------
-	text : str
-		The text to be stripped of punctuation.
-
-	Returns
-	-------
-	str
-		The text with all punctuation removed.
-	"""
-	# substitutes all punctuation marks with ""
-	return punc_regex.sub('', text)
 
 class COCO:
 	# This is a class variable that can be accessed and changed through COCO.database (WARNING: directly changing class variables in general is never a good idea as it is )
-	def __init__(self, file_path=Path("./captions_train2014.json"), glove_path=r"./glove.6B.50d.txt.w2v"):
+	def __init__(self, file_path=Path("./captions_train2014.json"), glove_path="./glove.6B.50d.txt.w2v"):
 		"""
 		Imports JSON file and stores its contents in the database class variable
 		
@@ -87,6 +72,8 @@ class COCO:
 			self.init_annotation_mappings()
 		else:
 			print("Import Error: Invalid file path")
+			
+		self.idf = self.inverse_document_frequency(self.all_captions)
 
 	def init_image_mappings(self):
 		"""Method to be called once by `__init__` to set up instance variables for image mappings
@@ -174,7 +161,7 @@ class COCO:
 		if caption_id in self.caption_id_to_img_id:
 			return self.caption_id_to_img_id[caption_id]
 		else:
-			print("No caption with given ID was found. This function has returned a None-type object")
+			# print("No caption with given ID was found. This function has returned a None-type object")
 			return None
 	
 	def get_caption_ids(self, image_id):
@@ -222,7 +209,58 @@ class COCO:
 			The weighted sum embedding fo the specified caption
 		""" 
 		return self.create_text_embedding(self.caption_id_to_caption[caption_id])
+		
+	def get_words(self, text: str) -> List[str]:
+		""" Returns all the words in a string, removing punctuation.
 
+		Parameters
+		----------
+		text : str
+			The text whose words to return.
+
+		Returns
+		-------
+		List[str]
+			The words in `text`, with no punctuation.
+		"""
+
+		return _PUNC_REGEX.sub(" ", text.lower()).split()
+
+	def _compute_doc_freq(self, documents: Iterable[str]) -> Counter:
+		""" Computes document frequency (the "DF" in "TF-IDF").
+
+		Parameters
+		----------
+		documents : List(str)
+			The list of documents.
+
+		Returns
+		-------
+		collections.Counter[str, int]
+			The dictionary's keys are words and its values are number of documents the word appeared in.
+		"""
+
+		df = Counter()
+		for doc in documents:
+			df.update(set(self.get_words(doc)))
+
+		return df
+
+	def inverse_document_frequency(self, documents: Iterable[str]) -> Dict[str, int]:
+		""" Computes the inverse document frequency document frequency (the "DF" in "TF-IDF").
+
+		Parameters
+		----------
+		documents : List(str)
+			The list of documents.
+
+		Returns
+		-------
+		collections.Counter[str, int]
+			The dictionary's keys are words and its values are number of documents the word appeared in.
+		"""
+		df = self._compute_doc_freq(documents)
+		return {word: np.log(len(documents) / (1.0 + count)) for word, count in df.items()}
 	
 	def create_text_embedding(self, text):
 		"""
@@ -238,21 +276,17 @@ class COCO:
 		embeddings : np.ndarray
 			A shape-(1, 50) numpy array of embeddings for the input text, weighed according to each word's IDF.
 		"""
-		text = text.lower()
-		text = strip_punc(text)
-		text_array = text.split()
-		
-		captions = self.get_all_captions()
+		text_array = self.get_words(text)
 		
 		embedding = np.zeros((1, 50))
 		
 		for item in text_array:
-			count = 0
-			for cap in captions:
-				if item in cap:
-					count += 1
-			IDF = np.log10(len(captions) / count)
-			embedding += self.glove[item] * IDF
+			if item not in self.glove:
+				continue
+			
+			current_idf = self.idf[item]
+			
+			embedding += self.glove[item] * current_idf
 			
 		embedding /= np.linalg.norm(embedding)
 		

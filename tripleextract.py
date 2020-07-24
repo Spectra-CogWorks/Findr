@@ -39,13 +39,13 @@ def create_train_and_test():
     for img in train_imgID:
         for i in coco.get_caption_ids(img):
             train_captions.append(i)
-    train_captions_final = np.random.choice(train_captions, 30000, replace=False)
+    train_captions_final = np.random.choice(train_captions, 300, replace=False)
 
     # populate val_captions with 10000 captions
     val_captions = []
     for img in val_imgID:
         val_captions.append(i for i in coco.get_caption_ids(img))
-    val_captions_final = np.random.choice(val_captions, 10000, replace=False)
+    val_captions_final = np.random.choice(val_captions, 100, replace=False)
 
     # use extract_triples function to get final train/val data
     train_data = extract_triples(train_captions_final)
@@ -62,7 +62,7 @@ def extract_triples(caption_ids):
     
     Returns
     -------
-    final_truples: np.ndarray shape=(1,300000)
+    final_truples: list shape=(1,300000)
         A numpy array where the row is a bunch of tuples.
     """
     final_truples = []
@@ -72,15 +72,18 @@ def extract_triples(caption_ids):
             # generate the 25 captions that we choose the FINAL bad caption from
             bad_batch_cap = []
             bad_batch_img = []
+            print("Awaiting intense success...")
             while len(bad_batch_cap) < 25:
                 bad_cap = random.choice(caption_ids)
                 bad_img = coco.get_image_id(bad_cap)
                 if  bad_img in bad_batch_img or bad_img == coco.get_image_id(good_cap):
+                    print("Inside the if...")
                     continue
                 else:
+                    print("Inside the else...")
                     bad_batch_cap.append(bad_cap)
                     bad_batch_img.append(bad_img)
-                    
+            print("Now..this is intens  e success")
             #determine which caption in bad_batch_cap is the FINAL bad caption
 
             cos_sims = {}
@@ -95,4 +98,5 @@ def extract_triples(caption_ids):
 
             final_truples.append(truple)
     
-    return np.array(final_truples)
+    print("Success")
+    return final_truples
