@@ -25,11 +25,11 @@ def cli():
     pass
 
 @cli.command()                  
-@click.argument('query_text', type=click.STRING)
-@click.option('-k', default=4, type=click.INT)
+@click.option('-q', '--query-text', 'query_text', type=click.STRING, prompt="Please enter query text: ")
+@click.option('-k', '--num-images', 'num_images', default=4, type=click.INT)
 @click.option('-f', '--filepath', type=click.STRING)
-@click.option('-w', '--weights_filepath', type=click.STRING)
-def search(query_text, k, filepath, weights_filepath):
+@click.option('-w', '--weights-filepath', 'weights_filepath', type=click.STRING)
+def search(query_text, num_images, filepath, weights_filepath):
     """ This function goes through the full search process using all the other files in the package"""
     # Initialize database
     COCO.import_database(Path(filepath))
@@ -41,12 +41,11 @@ def search(query_text, k, filepath, weights_filepath):
     model = Img2Caption()
     model.load_model(Path(weights_filepath))
     
-    # TODO Check that generate_descriptor() is correct
+    # TODO Check find_similar_images for accuracy and optimal performance
     # This gets the embeddings of all the images
-    img_ids = COCO.find_similar_images(model, query_embed, k)
+    img_ids = COCO.find_similar_images(model, query_embed, num_images)
     
     COCO.display_images(img_ids)
-    
 
 # This if statement is necessary in order to call the group, which then enables all of the subcommands to be called
 if __name__ == "__main__":

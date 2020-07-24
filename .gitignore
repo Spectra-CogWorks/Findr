@@ -3,3 +3,4 @@ __pycache__
 captions_train2014.json
 glove.6B.50d.txt.w2v
 resnet18_features.pkl
+Findr.egg-info
