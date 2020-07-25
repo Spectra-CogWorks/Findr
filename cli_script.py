@@ -30,9 +30,6 @@ def cli():
 @click.option('-w', '--weights-filepath', 'weights_filepath', type=click.STRING)
 def search(query_text, num_images, filepath, weights_filepath):
     """ This function goes through the full search process using all the other files in the package"""
-    # Initialize database
-    coco.import_database(Path(filepath))
-    
     # Create the query embedding
     query_embed = coco.create_text_embedding(query_text)
     

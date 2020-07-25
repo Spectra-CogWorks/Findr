@@ -26,28 +26,44 @@ def create_train_and_test():
             The ndarray of tuples (triplets) for val_data.
     """
     # get image Ids
-    img_ids = list(resnet.keys()) # List
+    img_ids = np.array(resnet.keys()) # List
 
-    train_imgID = np.random.choice(img_ids, int(len(img_ids)*4/5), replace=False)
-    val_imgID = []
-    for img in img_ids:
-        if img not in train_imgID:
-            val_imgID.append(img)
+    # Shuffle the image IDs 
+    np.random.shuffle(img_ids)
 
-    # populate train_captions with 30000 captions
+    # Division of the image IDs between the training and validation sets through slicing
+    train_imgids = img_ids[:(4 * len(img_ids)) // 5]
+    val_imgids = img_ids[(4 * len(img_ids)) // 5:]
+
+    # To restrict the captions, just add a count variable that breaks from the for loop after a certain threshold
+    # is reached.
+    # Populate train_captions with all the captifons
     train_captions = []
-    for img in train_imgID:
-        for i in coco.get_caption_ids(img):
-            train_captions.append(i)
-    train_captions_final = np.random.choice(train_captions, 300, replace=False)
+    count = 0
+    for img in train_imgids:
+        if count >= 300:
+            break
+        
+        train_captions.extend(coco.get_captions(img))
+        count += 1
+    
+    # This is ensuring that the captions are randomized and not clustered by image
+    train_captions_final = np.random.choice(train_captions, replace=False)
 
-    # populate val_captions with 10000 captions
+    # Populate val_captions with all the captions
     val_captions = []
-    for img in val_imgID:
-        val_captions.append(i for i in coco.get_caption_ids(img))
-    val_captions_final = np.random.choice(val_captions, 100, replace=False)
+    count = 0
+    for img in val_imgids:
+        if count >= 100:
+            break
+        
+        val_captions.extend(coco.get_captions(img))
+        count += 1
+    
+    # This is ensuring that the captions are randomized and not clustered by image
+    val_captions_final = np.random.choice(val_captions, replace=False)
 
-    # use extract_triples function to get final train/val data
+    # Use the extract_triples() to grab the truples
     train_data = extract_triples(train_captions_final)
     val_data = extract_triples(val_captions_final)
 
@@ -57,46 +73,49 @@ def extract_triples(caption_ids):
     """
     Parameters
     ----------
-    captions : np.ndarray shape=(30000,)
+    captions : np.ndarray shape=(N,)
         The set of caption IDs that we need to extract triples from.
     
     Returns
     -------
-    final_truples: list shape=(1,300000)
+    final_truples: list shape=(1, 10 * N)
         A numpy array where the row is a bunch of tuples.
     """
     final_truples = []
 
     for good_cap in caption_ids:
-        for i in range(10): #pylint: disable=unused-variable
-            # generate the 25 captions that we choose the FINAL bad caption from
+        bad_caps = []
+        
+        while(len(bad_caps) < 10):
             bad_batch_cap = []
             bad_batch_img = []
-            #print("Awaiting intense success...")
-            while len(bad_batch_cap) < 25:
+            
+            while(len(bad_batch_img) < 25):
                 bad_cap = random.choice(caption_ids)
                 bad_img = coco.get_image_id(bad_cap)
+                
                 if  bad_img in bad_batch_img or bad_img == coco.get_image_id(good_cap):
-                    #print("Inside the if...")
+                    # TODO Double check the intuition for this section
                     continue
                 else:
-                    #print("Inside the else...")
                     bad_batch_cap.append(bad_cap)
                     bad_batch_img.append(bad_img)
-            #print("Now..this is intens  e success")
-            #determine which caption in bad_batch_cap is the FINAL bad caption
-
+            
             cos_sims = {}
             for bad_cap in bad_batch_cap:
                 cos_sim = cosine_similarity(coco.get_caption_embedding(good_cap), coco.get_caption_embedding(bad_cap))
                 cos_sims[cos_sim] = bad_cap
-            final_bad_cap = cos_sims[max(cos_sims.keys())]
+            
+            # TODO This is almost certainly wrong
+            final_bad_cap = cos_sims[min(cos_sims)]
+            
+            bad_caps.append(final_bad_cap)
+            
+        truple = [(generate_descriptor(coco.get_image_id(good_cap)), 
+                   coco.get_caption_embedding(good_cap), 
+                   generate_descriptor(coco.get_image_id(bad_cap))) for bad_cap in bad_caps]
 
-            truple = (generate_descriptor(coco.get_image_id(good_cap)),
-                    coco.get_caption_embedding(good_cap),
-                    generate_descriptor(coco.get_image_id(final_bad_cap)))
-
-            final_truples.append(truple)
+        final_truples.extend(truple)
     
     print("Success")
     return final_truples

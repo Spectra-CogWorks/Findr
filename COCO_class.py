@@ -100,7 +100,8 @@ class COCO:
 			self.all_captions.append(caption_dict["caption"])
 			
 			self.caption_id_to_img_id[caption_dict["id"]] = caption_dict["image_id"]
-				
+			
+			# TODO THERE IS SOMETHING INCREDIBLY WRONG BELOW
 			if caption_dict["image_id"] in self.img_ids_to_caption_ids:
 				self.img_ids_to_caption_ids[caption_dict["image_id"]].append(caption_dict["id"])
 			else:
