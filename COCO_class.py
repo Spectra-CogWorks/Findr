@@ -161,9 +161,6 @@ class COCO:
 		"""
 		if caption_id in self.caption_id_to_img_id:
 			return self.caption_id_to_img_id[caption_id]
-		#else:
-			# print("No caption with given ID was found. This function has returned a None-type object")
-			#return None
 	
 	def get_caption_ids(self, image_id):
 		""" Gets associated caption IDs for an image ID
@@ -178,7 +175,8 @@ class COCO:
 		caption_ids : List[int]
 			Caption IDs for the list items
 		"""
-		return self.img_ids_to_caption_ids[image_id]
+		if image_id in self.image_ids:
+			return self.img_ids_to_caption_ids[image_id]
 	
 	def get_captions(self, image_id):
 		"""Gets the captions associated with the image ID
@@ -193,7 +191,8 @@ class COCO:
 		captions : List[str]
 			The captions
 		"""
-		return self.img_ids_to_captions[image_id]
+		if image_id in self.image_ids:
+			return self.img_ids_to_captions[image_id]
 	
 	# ? DO NOT MOVE TO __init___
 	def get_caption_embedding(self, caption_id):
@@ -209,7 +208,8 @@ class COCO:
 		caption_embed : np.ndarray - shape(50,)
 			The weighted sum embedding fo the specified caption
 		""" 
-		return self.create_text_embedding(self.caption_id_to_caption[caption_id])
+		if caption_id in self.all_caption_ids:
+			return self.create_text_embedding(self.caption_id_to_caption[caption_id])
 		
 	def get_words(self, text: str) -> List[str]:
 		""" Returns all the words in a string, removing punctuation.
