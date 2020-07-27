@@ -1,10 +1,11 @@
 "file for extracting triples"
 import pickle
 import numpy as np
-from COCO_class import cosine_similarity, coco
-from descriptors import generate_descriptor
-from img2caption_class import Img2Caption
 import random
+
+from COCO_class import cosine_similarity, coco #pylint: disable=import-error
+from descriptors import generate_descriptor #pylint: disable=import-error
+from img2caption_class import Img2Caption #pylint: disable=import-error
 
 with open("resnet18_features.pkl", mode="rb") as opened_file:
     resnet = pickle.load(opened_file)
@@ -41,7 +42,7 @@ def create_train_and_test():
     count = 0
     for img in train_imgids:
         # This stops for loop for testing purposes
-        if len(train_captions) >= 200:
+        if len(train_captions) >= 25:
             break
         
         train_captions.extend(coco.get_caption_ids(img))
@@ -54,13 +55,16 @@ def create_train_and_test():
     val_captions = []
     for img in val_imgids:
         # This stops for loop for testing purposes
-        if len(val_captions) >= 100:
+        if len(val_captions) >= 25:
             break
         
         val_captions.extend(coco.get_caption_ids(img))
     
     # This is ensuring that the captions are randomized and not clustered by image
     random.shuffle(val_captions)
+    
+    print(len(train_captions))
+    print(len(val_captions))
 
     # Use the extract_triples() to grab the truples
     train_data = extract_triples(train_captions)
@@ -81,38 +85,30 @@ def extract_triples(caption_ids):
         A numpy array where the row is a bunch of tuples.
     """
     final_truples = []
-    print('I have reached the tuple')
+    #print('I have reached the tuple')
 
     for good_cap in caption_ids:
         bad_caps = []
-        print("I am going through one good caption")
-        print("I am going through the 10 bad captions")
+        #print("I am going through one good caption")
+        #print("I am going through the 10 bad captions")
         while(len(bad_caps) < 10):
-            bad_batch_cap = []
+            cos_sims = {}
             
-            print("I am finding a bad image")
-            bad_caps = np.random.choice(caption_ids, size=25)
-            for bad_cap in bad_caps:
-                bad_img = coco.get_image_id(bad_cap)
-                    
-                if (bad_cap in bad_batch_cap or bad_img == coco.get_image_id(good_cap)):
+            #print("I am finding a bad image")
+            bad_batch_caps = list(np.random.choice(caption_ids, size=25))
+            for bad_cap in bad_batch_caps:
+                if (bad_cap in cos_sims.values() or coco.get_image_id(bad_cap) == coco.get_image_id(good_cap)):
                     continue
                 else:
-                    bad_batch_cap.append(bad_cap)
-            
-            # Optimize this similarity score section
-            cos_sims = {}
-            print("I am picking the baddest image")
-            for bad_cap in bad_batch_cap:
-                cos_sim = cosine_similarity(coco.get_caption_embedding(good_cap), coco.get_caption_embedding(bad_cap))
-                cos_sims[cos_sim] = bad_cap
+                    cos_sim = cosine_similarity(coco.get_caption_embedding(good_cap), coco.get_caption_embedding(bad_cap))
+                    cos_sims[cos_sim] = bad_cap
             
             final_bad_cap = cos_sims[min(cos_sims)]
             
             bad_caps.append(final_bad_cap)
-            print("One bad image was added")
-            print()
-        print()
+            #print("One bad image was added")
+            #print()
+        #print()
          
         truple = [(generate_descriptor(coco.get_image_id(good_cap)), 
                    coco.get_caption_embedding(good_cap), 
