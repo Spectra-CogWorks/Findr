@@ -1,6 +1,7 @@
 import numpy as np
 import pickle
-#load in pickle file with resnet18
+
+# load in pickle file with resnet18
 with open("resnet18_features.pkl", mode="rb") as opened_file:
     resnet = pickle.load(opened_file)
 
@@ -21,15 +22,16 @@ def generate_descriptors(imgIDs):
     None
     """
     descriptors = []
-    
+
     for imgID in imgIDs:
         if imgID in resnet.keys():
             descriptors.append(resnet[imgID])
         else:
             descriptors.append(None)
-            
+
     return descriptors
-    
+
+
 def generate_descriptor(imgID):
     """ Generates decriptor from resnet dictionary if imgIDs are keys. Else, returns none in their place
         
