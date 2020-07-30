@@ -1,9 +1,9 @@
 import click
 from pathlib import Path
 
-import descriptors as de
-from img2caption_class import Img2Caption
-from COCO_class import coco
+import findr.descriptors as de
+from findr.img2caption_class import Img2Caption
+from findr.COCO_class import coco
 
 # We might have to look into coding chained commands to prevent database from having issues
 @click.group()

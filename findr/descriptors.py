@@ -2,7 +2,7 @@ import numpy as np
 import pickle
 
 # load in pickle file with resnet18
-with open("resnet18_features.pkl", mode="rb") as opened_file:
+with open("./findr/resnet18_features.pkl", mode="rb") as opened_file:
     resnet = pickle.load(opened_file)
 
 # TODO Please check that this function works

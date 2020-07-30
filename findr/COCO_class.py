@@ -12,8 +12,8 @@ import re, string
 from typing import Dict, List, Iterable
 from collections import Counter
 
-from descriptors import generate_descriptor
-from img2caption_class import Img2Caption
+from findr.descriptors import generate_descriptor
+from findr.img2caption_class import Img2Caption
 
 _PUNC_REGEX = re.compile("[{}]".format(re.escape(string.punctuation)))
 
@@ -58,8 +58,8 @@ class COCO:
     # This is a class variable that can be accessed and changed through COCO.database (WARNING: directly changing class variables in general is never a good idea as it is )
     def __init__(
         self,
-        file_path=Path("./captions_train2014.json"),
-        glove_path="./glove.6B.50d.txt.w2v",
+        file_path=Path("./findr/captions_train2014.json"),
+        glove_path="./findr/glove.6B.50d.txt.w2v",
     ):
         """
 		Imports JSON file and stores its contents in the database class variable

@@ -3,11 +3,11 @@ import pickle
 import numpy as np
 import random
 
-from COCO_class import cosine_similarity, coco  # pylint: disable=import-error
-from descriptors import generate_descriptor  # pylint: disable=import-error
-from img2caption_class import Img2Caption  # pylint: disable=import-error
+from findr.COCO_class import cosine_similarity, coco  # pylint: disable=import-error
+from findr.descriptors import generate_descriptor  # pylint: disable=import-error
+from findr.img2caption_class import Img2Caption  # pylint: disable=import-error
 
-with open("resnet18_features.pkl", mode="rb") as opened_file:
+with open("./findr/resnet18_features.pkl", mode="rb") as opened_file:
     resnet = pickle.load(opened_file)
 
 
@@ -81,7 +81,7 @@ def extract_triples(caption_ids):
     captions : list size=(N,)
         The set of caption IDs that we need to extract triples from.
     
-    Returns
+    Returns 
     -------
     final_truples: list size=(1, 10 * N)
         A numpy array where the row is a bunch of tuples.

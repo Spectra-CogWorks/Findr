@@ -2,7 +2,7 @@ import mygrad as mg
 from mygrad.nnet.losses.margin_ranking_loss import margin_ranking_loss
 import numpy as np
 
-from img2caption_class import Img2Caption
+from findr.img2caption_class import Img2Caption
 
 
 def mr_loss(model, triple):
